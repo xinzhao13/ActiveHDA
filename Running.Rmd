@@ -139,7 +139,7 @@ I've put together this notebook to:
 * Learn the basic functions of the [*leaflet*](https://rstudio.github.io/leaflet/) R package.
 * Learn to [publish](https://resources.github.com/whitepapers/github-and-rstudio/) R markdown through GitHub Pages.
 
-Please feel free to contribute to this repository, and share your running routine. My intention was to also recommend some places for indoor fitness-related activities, however given the current situation this is no longer possible. 
+Please feel free to contribute to this [repository](https://github.com/xinzhao13/ActiveHDA), and share your running routine. My intention was to also recommend some places for indoor fitness-related activities, however given the current situation this is no longer possible. 
 
 Note that:
 
