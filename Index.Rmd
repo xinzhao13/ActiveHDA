@@ -1,0 +1,21 @@
+---
+title: "Active HDA"
+output:
+  html_document:
+    df_print: paged
+---
+
+London is a resourceful city in terms of physical activities. You can find:
+
+* At least a dozen parks
+* Parkour parks
+* Dancing schools
+* Salsa bars
+* Climbing walls
+* Kickboxing clubs
+* Any sports clubs you can think of
+* Casual walks within 100km of the city
+
+I prefer to do most things alone, but there is something different about exercise that is a lot more fun with a crowd (eg. dancing like a group of monkeys). Plus since our Masters' is so intensive, I do think it's important to have a distraction through any of baking, cooking, puzzle solving, board games, video games, walking, cycling, running, alcohol or reading.
+
+Here I will start from running. It might be the most popular go-to relaxation-slash-exercise activity, which I presume a significant proportion of our MSc HDA cohort is doing. A secondary benefit of running is that it is somehow "productive" alongside the health aspect.

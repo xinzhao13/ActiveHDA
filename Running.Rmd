@@ -1,0 +1,232 @@
+---
+title: "Running in London"
+authour: Xin Zhao
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+
+rm(list = ls())
+
+require("knitr")
+opts_knit$set(root.dir = "C:/Xin/Studies/ActiveHDA/Route")
+
+require(leaflet)
+require(tidyverse)
+require(leaflet.providers)
+require(lubridate)
+require(XML)
+require(raster)
+require(plotKML)
+
+require(rmarkdown)
+require(yaml)
+
+```
+
+```{r include=FALSE,echo=FALSE}
+
+setwd("C:/Xin/Studies/ActiveHDA/Route")
+
+# List all gpx files in folder
+files <- list.files(".", pattern = "*.gpx")
+
+# Loop through all gpx files
+agg_gpx <- sapply(files, function(f) {
+  readGPX(f)$tracks[[1]]
+  
+})
+
+
+names(agg_gpx)
+
+# Define function for distance calculation
+# Reference: https://rpubs.com/ials2un/gpx1
+shift_vec <- function (vec, shift) {
+  if (length(vec) <= abs(shift)) {
+    rep(NA , length(vec))
+  } else{
+    if (shift >= 0) {
+      c(rep(NA, shift), vec[1:(length(vec) - shift)])
+    }
+    else {
+      c(vec[(abs(shift) + 1):length(vec)], rep(NA, abs(shift)))
+    }
+  }
+}
+
+plot_one <- function(data) {
+  
+  # Extract data frame
+  data<- as.data.frame(data)
+  
+  # Shift coordinates to previous
+  data$lat_p1 <- shift_vec(data$lat,-1)
+  data$lon_p1 <- shift_vec(data$lon,-1)
+  
+  # Calculate distance to previous point using pointDistance function
+  # Reference: https://rpubs.com/ials2un/gpx1
+  data$dist_p1 <- apply(
+    data,
+    1,
+    FUN = function (row) {
+      pointDistance(c(as.numeric(row["lat_p1"]),
+                      as.numeric(row["lon_p1"])),
+                    c(as.numeric(row["lat"]), as.numeric(row["lon"])),
+                    lonlat = T)
+    }
+  )
+  
+  head(data)
+  
+  # Calculate total distance in km
+  dist_tot <-
+    (sum(data$dist_p1, na.rm = TRUE) / 1000) %>% round(., 1)
+  dist_tot
+  
+  # Reformat time
+  data$time_adj <-
+    strptime(data$time, format = "%Y-%m-%dT%H:%M:%OS")
+  head(data$time_adj)
+  
+  # Calculate time taken
+  time_obj <-
+    difftime(data$time_adj[nrow(data)], data$time_adj[1], units="auto") 
+  
+  # Calculate time in numerical terms
+  time_tot <- as.numeric(time_obj) %>% round(.,1)
+
+  # Extract the unit of time
+  time_unit<- units(time_obj)
+  
+  # Remove first and last 5 rows
+  data<-data[-c(1:20),]
+  data<-data[1:(dim(data)-20),]
+  
+  # # Make text for popup
+  # pop_text <- paste(time_tot, dist_tot, sep = "\n")
+  
+  # Map the route
+  map <- leaflet() %>%
+    setView(lng = median(data$lon),
+            lat = median(data$lat),
+            zoom = 13) %>%
+    addTiles() %>% 
+    addProviderTiles("CartoDB.Positron") %>%
+    addPolylines(
+      lng = data$lon,
+      lat = data$lat,
+      color = "#C70039",
+      weight = 3,
+      label = paste0("Indicative Distance: ", dist_tot, "km, Time: ", time_tot, time_unit)
+      # popupOptions = popupOptions(
+      #   autoPan = TRUE,
+      #   maxWidth = 400,
+      #   closeonClick = TRUE
+      # )
+      
+    )
+  map
+}
+
+
+
+```
+I've put together this notebook to:
+
+* Document some of my favourite running routes in London for your reference.
+* Encourage fellow MSc HDA students to stay active during and after the holiday season.
+* Learn the basic functions of the [*leaflet*](https://rstudio.github.io/leaflet/) R package.
+* Learn to [publish](https://resources.github.com/whitepapers/github-and-rstudio/) R markdown through GitHub Pages.
+
+Please feel free to contribute to this repository, and share your running routine. My intention was to also recommend some places for indoor fitness-related activities, however given the current situation this is no longer possible. 
+
+Note that:
+
+* I've used the *leaflet* package to plot the *.gpx* files exported from [Strava](https://www.strava.com/) in the past 3 years. Some routes I'd like to recommend was lost in another App, so I'm unable to show them here :/
+
+* Masking the origin and destination of the tracked routes are out of my capacity at the moment. Therefore, the first and last 20 waypoints have been removed from the plotted routes. 
+
+* Each plot shows a popup on mouse-over, that includes the *indicative* distance and time of my activity. The distance calculated by aggregating the distance of each segment of the tracked record. When I checked with the actual record, the calculated distance plotted here are usually inflated. The total time were calculated in the same approach and expressed in hours or minutes. This somehow seems to be quite reliable.
+
+* One thing I wish I had was pictures of the views along those routes to show you guys - I will try and remember to take some next time.
+
+**Embankment Run**
+
+*Distance: approximately 4.5km*
+
+This run along the Thames River embankment takes in nicely *Waterloo Bridge* and *Westminster Bridge*. You would run past *Somerest House*, *Embankment Park* and *London Eye*. Technically you'd be able to see *Ben Big* too before crossing *Waterloo Bridge*, but somehow I don't have this memory. On the east section, you can also add in *Blackfriars Bridge*, or [Millennium Bridge](https://www.google.com/maps/place/Millennium+Bridge/@51.5095291,-0.1007312,17z/data=!3m1!4b1!4m5!3m4!1s0x487604abcc128291:0xbd5ceafc2f514e1c!8m2!3d51.5095291!4d-0.0985425) for a view of *St Paul's*. In the pre-lockdown days it is a very touristy run around *Waterloo Bridge* and the entire south section.
+```{r Lunch_Run, echo=FALSE, warning=FALSE}
+
+df <- agg_gpx$Lunch_Run.gpx
+
+plot_one(df)
+
+```
+
+**Another Run Along the Thames**
+
+*Distance: 5km*
+
+This was a favourite night run on the north side of the river. I would usually run into a few fellow runners, and wait for the traffic light at one of the junctions for at least 2 minutes. Other than that, it's very peaceful and well-lit.
+```{r EC_Night_Run, echo=FALSE, warning=FALSE}
+
+df <- agg_gpx$EC_Night_Run.gpx
+
+plot_one(df)
+
+```
+**Regents Park Outer Circle**
+
+*Distance: 5km*
+
+This was my first and only running route for a long time. During the day, expect kids and parents around the north gates, as well as the smell of elephants from *London Zoo*. You can run the inner circles inside the park too, or just come here for a summer picnic. During the night, it's not the most well-lit run but it had the best (runable) starry night in Central London. You won't be lost as the shape of the park itself gives good guidance of navigation, and you would easily return to where you start. Also, comparing to the night run in Hyde Park, it is much less spooky.
+
+Unfortunately I've lost the record of my runs, but I will never forget the starry heavens above me.
+
+
+**Canal: Stratford, Hackney Wick, Clapton**
+
+*Distance: Approximately 14km*
+
+This was usually my training route before half marathons. I strongly advise against any lone night runs here, simply because 1) the trees next to you are very spooky, 2) it's not well-lit 3) plus you might end up in the water XD. I did run with friends at night here and that was fine. This route takes in Hackney Wick which used to be really nice to hang out, there are two boats that serves food and alcohol by the canal, *Crate Brewery & Pizza*, *Rendy's Wing Bar* (at Here East) and many small beweries behind the canal. Lea Rowing Club is on this route, they usually train on Sunday morning (if I remember correctly).
+
+In terms of the view of the canal itself, this route is much much better than the next one especially between Homerton and Clapton.
+
+
+```{r Canal_North, echo=FALSE, warning=FALSE}
+df <- agg_gpx$Canal_North.gpx
+
+plot_one(df)
+
+
+```
+
+**City, Canal and Stratford**
+
+*Distance: Approximately 10km*
+
+This route was my commute home. You will run past *Sadler's Wells* (I used to come here alone after work, highly recommended!!) and *Exmouth Market* (cafes, wine bar, bike shop, pubs). *Cafe Kick* was an affordable tiny bar. It had two tiny screens for football and a not so hygienic toilet - somehow we all loved it. Maybe it's the dancy customers we happened to run into. 
+
+6-8pm on an average summer day along the canal, expect the boozy air and other commuters going the same direction as you (and overtake you XD). Also expect people walk, sit and chat by the canal until or after the sunset. Nothing is more relaxing than this after a long day of work.
+
+
+```{r Commute_Run, echo=FALSE, warning=FALSE}
+
+df <- agg_gpx$Office_Home.gpx
+
+plot_one(df)
+
+```
+
+```{r}
+
+# Move backwards by one directory
+setwd("..")
+
+```
+
+
+
+
+

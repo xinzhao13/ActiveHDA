@@ -1,0 +1,9 @@
+name: "Active HDA"
+output_dir: "."
+navbar:
+  left:
+    - text: "Home"
+      href: Index.html
+    - text: "Running in London"
+      href: Running.html
+      href: Running.html
