@@ -219,10 +219,6 @@ plot_one(df)
 
 ```
 
-```{r}
-
-# Move backwards by one directory
-setwd("..")
 
 ```
 
